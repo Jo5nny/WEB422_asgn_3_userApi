@@ -5,9 +5,11 @@ const dotenv = require("dotenv");
 const jwt = require('jsonwebtoken');  
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
+const serverless = require("serverless-http");
+const userService = require("./user-service.js");
 let ExtractJwt = passportJWT.ExtractJwt;
 let JwtStrategy = passportJWT.Strategy;
-
+dotenc.config();
 let jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt'),
     secretOrKey: process.env.JWT_SECRET || '&0y7$noP#5rt99&GB%Pz7j2b1vkzaB0RKs%^N^0zOP89NT04mPuaM!&G8cbNZOtH'
@@ -27,14 +29,20 @@ let jwtOptions = {
 
   passport.use(strategy);
 app.use(passport.initialize());
-dotenv.config();
-const userService = require("./user-service.js");
-app.use(express.static(__dirname + '/public'));
-const HTTP_PORT = process.env.PORT || 8080;
+
 
 app.use(express.json());
 app.use(cors());
 
+app.use(async (req, res, next) => {
+    try {
+      await userService.connect();
+      next();
+    } catch (err) {
+      res.status(500).json({ message: "Database connection failed", error: err });
+    }
+  });
+  
 app.post("/api/user/register", (req, res) => {
     userService.registerUser(req.body)
     .then((msg) => {
@@ -97,11 +105,5 @@ app.delete("/api/user/favourites/:id",passport.authenticate('jwt', {session: fal
     })
 });
 
-userService.connect()
-.then(() => {
-    app.listen(HTTP_PORT, () => { console.log("API listening on: " + HTTP_PORT) });
-})
-.catch((err) => {
-    console.log("unable to start the server: " + err);
-    process.exit();
-});
+
+module.exports = app;
