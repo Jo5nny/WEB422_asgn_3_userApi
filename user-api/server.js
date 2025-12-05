@@ -1,15 +1,17 @@
 const express = require('express');
 const app = express();
 const cors = require("cors");
-const dotenv = require("dotenv");
+
 const jwt = require('jsonwebtoken');  
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const serverless = require("serverless-http");
 const userService = require("./user-service.js");
+const dotenv = require("dotenv");
+
 let ExtractJwt = passportJWT.ExtractJwt;
 let JwtStrategy = passportJWT.Strategy;
-dotenc.config();
+dotenv.config();
 let jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('jwt'),
     secretOrKey: process.env.JWT_SECRET || '&0y7$noP#5rt99&GB%Pz7j2b1vkzaB0RKs%^N^0zOP89NT04mPuaM!&G8cbNZOtH'
